@@ -17,6 +17,7 @@
   <symbol id="i-edit" viewBox="0 0 24 24"><path d="M5 19l1-4 9-9 3 3-9 9-4 1zM14 7l3 3"/></symbol>
   <symbol id="i-trash" viewBox="0 0 24 24"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12"/></symbol>
   <symbol id="i-img" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="3"/><circle cx="9" cy="10" r="1.5"/><path d="M4 16l5-4 4 3 3-2 4 3"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.6"/><path d="M5 20c.6-4 3.4-6 7-6s6.4 2 7 6"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
   <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
   <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></symbol>
@@ -35,6 +36,11 @@
 
   <main>
     <section class="view active" id="viewMain">
+      <div class="hero">
+        <div class="avatars"><label class="avatar" data-k="p1"><span class="face"></span><input class="avIn" data-k="p1" type="file" accept="image/*" hidden></label><span class="knot"></span><label class="avatar" data-k="p2"><span class="face"></span><input class="avIn" data-k="p2" type="file" accept="image/*" hidden></label></div>
+        <div class="hero-names" id="heroNames" hidden></div>
+        <div class="counter hero-counter" id="heroCounter"></div>
+      </div>
       <div class="edit-badge" id="editBadge" hidden>編集中</div>
       <div class="card">
         <label class="field"><span>日付</span><input type="date" id="fDate"></label>
@@ -76,6 +82,10 @@
 
     <div class="group">
       <h3>ふたりの情報</h3>
+      <div class="avatar-row">
+        <div class="av-set"><label class="avatar sm" data-k="p1"><span class="face"></span><input class="avIn" data-k="p1" type="file" accept="image/*" hidden></label><div><b>あなた</b><button class="link" data-clear="p1">写真を削除</button></div></div>
+        <div class="av-set"><label class="avatar sm" data-k="p2"><span class="face"></span><input class="avIn" data-k="p2" type="file" accept="image/*" hidden></label><div><b>パートナー</b><button class="link" data-clear="p2">写真を削除</button></div></div>
+      </div>
       <label class="field"><span>あなたの名前</span><input type="text" id="sName1" maxlength="20"></label>
       <label class="field"><span>パートナーの名前</span><input type="text" id="sName2" maxlength="20"></label>
       <label class="field"><span>記念日（付き合った日）</span><input type="date" id="sAnniv"></label>

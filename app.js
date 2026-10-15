@@ -3,7 +3,7 @@ const $ = s => document.querySelector(s);
 const KEY = 'couple-memory-v1';
 const FONTS = { mplus: "'M PLUS Rounded 1c',sans-serif", kosugi: "'Kosugi Maru',sans-serif" };
 const DOW = ['日','月','火','水','木','金','土'];
-const def = { memories: [], couple: { n1: '', n2: '', anniv: '' }, set: { fmt: 'days', font: 'mplus', size: 100 } };
+const def = { memories: [], couple: { n1: '', n2: '', anniv: '', p1: '', p2: '' }, set: { fmt: 'days', font: 'mplus', size: 100 } };
 let db = load();
 let cur = { photos: [], editId: null, title: '' };
 let month = new Date(); month.setDate(1);
@@ -42,29 +42,59 @@ function countUp(el, to) {
     el.textContent = Math.round(to * e).toLocaleString('ja-JP'); if (k < 1) requestAnimationFrame(step); };
   requestAnimationFrame(step);
 }
-function renderCounter(animate) {
-  const { n1, n2, anniv } = db.couple, nm = $('#names'), el = $('#counter');
-  const names = [n1, n2].filter(Boolean).join(' & ');
-  nm.hidden = !names; nm.textContent = names;
-  if (!anniv) { el.innerHTML = '<button class="hint" id="hint">記念日を設定する</button>'; $('#hint').onclick = openSettings; return; }
+function counterHTML() {
+  const anniv = db.couple.anniv;
+  if (!anniv) return '<button class="hint">記念日を設定する</button>';
   const [y, m, d] = anniv.split('-').map(Number);
   const start = new Date(y, m-1, d), now = new Date(); now.setHours(0,0,0,0);
-  if (now < start) { el.innerHTML = '<span class="lead">記念日はこれから</span>'; return; }
+  if (now < start) return '<span class="lead">記念日はこれから</span>';
   if (db.set.fmt === 'days') {
-    const days = Math.round((now - start) / 864e5);
-    el.innerHTML = '<span class="lead">ふたりで</span><span class="num"></span><span class="unit">日</span>';
-    const n = el.querySelector('.num'); animate ? countUp(n, days) : n.textContent = days.toLocaleString('ja-JP');
-  } else {
-    let yy = now.getFullYear() - y, mm = now.getMonth() - (m-1), dd = now.getDate() - d;
-    if (dd < 0) { mm--; dd += new Date(now.getFullYear(), now.getMonth(), 0).getDate(); }
-    if (mm < 0) { yy--; mm += 12; }
-    el.innerHTML = `<span class="lead">ふたりで</span><span class="num">${yy}</span><span class="unit">年</span><span class="num">${mm}</span><span class="unit">ヶ月</span><span class="num">${dd}</span><span class="unit">日</span>`;
+    const days = Math.round((now - start) / 864e5) + 1;
+    return `<span class="lead">ふたりで</span><span class="num" data-n="${days}">${days.toLocaleString('ja-JP')}</span><span class="unit">日</span>`;
   }
+  let yy = now.getFullYear() - y, mm = now.getMonth() - (m-1), dd = now.getDate() - d;
+  if (dd < 0) { mm--; dd += new Date(now.getFullYear(), now.getMonth(), 0).getDate(); }
+  if (mm < 0) { yy--; mm += 12; }
+  return `<span class="lead">ふたりで</span><span class="num">${yy}</span><span class="unit">年</span><span class="num">${mm}</span><span class="unit">ヶ月</span><span class="num">${dd}</span><span class="unit">日</span>`;
 }
+function renderCounter(animate) {
+  const { n1, n2 } = db.couple, names = [n1, n2].filter(Boolean).join(' & ');
+  ['#names', '#heroNames'].forEach(k => { const e = $(k); e.hidden = !names; e.textContent = names; });
+  const html = counterHTML();
+  ['#counter', '#heroCounter'].forEach(k => {
+    const el = $(k); el.innerHTML = html;
+    el.querySelectorAll('.hint').forEach(b => b.onclick = openSettings);
+    const n = el.querySelector('.num[data-n]'); if (animate && n) countUp(n, +n.dataset.n);
+  });
+}
+/* プロフィール写真 */
+function paintAvatars() {
+  document.querySelectorAll('.avatar').forEach(a => {
+    const src = db.couple[a.dataset.k];
+    a.classList.toggle('has-photo', !!src);
+    a.querySelector('.face').innerHTML = src ? `<img src="${src}" alt="">` : '<svg class="ic"><use href="#i-user"/></svg>';
+  });
+}
+function cropSquare(file, size = 320) {
+  return new Promise(res => {
+    const r = new FileReader();
+    r.onload = () => { const img = new Image(); img.onload = () => {
+      const s = Math.min(img.width, img.height), c = document.createElement('canvas'); c.width = c.height = size;
+      c.getContext('2d').drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, size, size); res(c.toDataURL('image/jpeg', .85));
+    }; img.src = r.result; };
+    r.readAsDataURL(file);
+  });
+}
+document.querySelectorAll('.avIn').forEach(inp => inp.onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  const k = inp.dataset.k, prev = db.couple[k]; db.couple[k] = await cropSquare(f);
+  if (!save()) { db.couple[k] = prev; return; } paintAvatars(); toast('プロフィール写真を更新しました');
+});
+document.querySelectorAll('[data-clear]').forEach(b => b.onclick = () => { db.couple[b.dataset.clear] = ''; save(); paintAvatars(); });
 
 /* ---------- views ---------- */
 function show(id) {
-  view = id;
+  view = id; document.body.dataset.view = id;
   document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === id));
   const main = id === 'viewMain';
   $('#btnNav use').setAttribute('href', main ? '#i-back' : '#i-plus');
@@ -187,7 +217,7 @@ $('#sFormat').onclick = e => { const b = e.target.closest('button'); if (!b) ret
 $('#sFont').onclick = e => { const b = e.target.closest('button'); if (!b) return; db.set.font = b.dataset.v; syncSeg(); applySettings(); save(); };
 $('#sSize').oninput = e => { db.set.size = +e.target.value; applySettings(); save(); };
 ['sName1','sName2','sAnniv'].forEach(id => $('#' + id).addEventListener('input', () => {
-  db.couple = { n1: $('#sName1').value.trim(), n2: $('#sName2').value.trim(), anniv: $('#sAnniv').value };
+  db.couple = { ...db.couple, n1: $('#sName1').value.trim(), n2: $('#sName2').value.trim(), anniv: $('#sAnniv').value };
   renderCounter(); save();
 }));
 const closeSet = () => { $('#overlay').hidden = true; save(); };
@@ -266,12 +296,12 @@ $('#imJson').onchange = async e => {
     const add = inc.memories.filter(m => !ids.has(m.id)), prev = db;
     db = { memories: [...db.memories, ...add], couple: d.couple ? inc.couple : db.couple, set: d.set ? inc.set : db.set };
     if (!save()) { db = prev; return; }
-    applySettings(); renderCounter(); syncSeg(); renderCal();
+    applySettings(); renderCounter(); paintAvatars(); syncSeg(); renderCal();
     $('#sName1').value = db.couple.n1; $('#sName2').value = db.couple.n2; $('#sAnniv').value = db.couple.anniv; $('#sSize').value = db.set.size;
     toast(`${add.length}件を復元しました`);
   } catch (err) { toast('JSONを読み込めませんでした'); }
 };
 
 /* ---------- boot ---------- */
-applySettings(); renderCounter(true); resetForm(); show('viewMain');
+applySettings(); renderCounter(true); paintAvatars(); resetForm(); show('viewMain');
 })();
