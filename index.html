@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ふたりの思い出</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=M+PLUS+Rounded+1c:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="i-next" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><path d="M19.05 10.11 L21.48 10.50 L21.48 13.50 L19.05 13.89 L18.32 15.65 L19.77 17.64 L17.64 19.77 L15.65 18.32 L13.89 19.05 L13.50 21.48 L10.50 21.48 L10.11 19.05 L8.35 18.32 L6.36 19.77 L4.23 17.64 L5.68 15.65 L4.95 13.89 L2.52 13.50 L2.52 10.50 L4.95 10.11 L5.68 8.35 L4.23 6.36 L6.36 4.23 L8.35 5.68 L10.11 4.95 L10.50 2.52 L13.50 2.52 L13.89 4.95 L15.65 5.68 L17.64 4.23 L19.77 6.36 L18.32 8.35Z"/><circle cx="12" cy="12" r="2.8"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M5 19l1-4 9-9 3 3-9 9-4 1zM14 7l3 3"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12"/></symbol>
+  <symbol id="i-img" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="3"/><circle cx="9" cy="10" r="1.5"/><path d="M4 16l5-4 4 3 3-2 4 3"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 16V5M7 9l5-5 5 5M5 20h14"/></symbol>
+</svg>
+
+<div class="app">
+  <header class="top">
+    <button class="icon-btn" id="btnNav" aria-label="カレンダーへ"><svg class="ic"><use href="#i-back"/></svg></button>
+    <div class="brand">
+      <div class="names" id="names" hidden></div>
+      <div class="counter" id="counter"></div>
+    </div>
+    <button class="icon-btn" id="btnSettings" aria-label="設定"><svg class="ic"><use href="#i-gear"/></svg></button>
+  </header>
+
+  <main>
+    <section class="view active" id="viewMain">
+      <div class="edit-badge" id="editBadge" hidden>編集中</div>
+      <div class="card">
+        <label class="field"><span>日付</span><input type="date" id="fDate"></label>
+        <label class="field"><span>思い出</span><textarea id="fText" rows="6" placeholder="今日のできごと、感じたこと…"></textarea></label>
+        <div class="field"><span>写真</span>
+          <div class="photos" id="photoList"></div>
+          <label class="btn ghost"><svg class="ic"><use href="#i-img"/></svg>写真を追加<input type="file" id="fPhoto" accept="image/*" multiple hidden></label>
+        </div>
+        <div class="row">
+          <button class="btn ghost" id="btnCancel" hidden>キャンセル</button>
+          <button class="btn primary" id="btnSave">保存する</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="viewCal">
+      <div class="cal-head">
+        <button class="icon-btn" id="prevM" aria-label="前の月"><svg class="ic"><use href="#i-back"/></svg></button>
+        <h2 id="monthLabel"></h2>
+        <button class="icon-btn" id="nextM" aria-label="次の月"><svg class="ic"><use href="#i-next"/></svg></button>
+      </div>
+      <div class="card cal">
+        <div class="grid dow" id="dow"></div>
+        <div class="grid days" id="days"></div>
+      </div>
+      <div class="day-head">
+        <h3 id="dayLabel"></h3>
+        <button class="btn small primary" id="btnAddDay"><svg class="ic"><use href="#i-plus"/></svg>追加</button>
+      </div>
+      <div id="memList"></div>
+    </section>
+  </main>
+</div>
+
+<div class="overlay" id="overlay" hidden>
+  <div class="sheet" role="dialog" aria-label="設定">
+    <div class="grab"></div>
+    <div class="sheet-head"><h2>設定</h2><button class="icon-btn" id="closeSet" aria-label="閉じる"><svg class="ic"><use href="#i-x"/></svg></button></div>
+
+    <div class="group">
+      <h3>ふたりの情報</h3>
+      <label class="field"><span>あなたの名前</span><input type="text" id="sName1" maxlength="20"></label>
+      <label class="field"><span>パートナーの名前</span><input type="text" id="sName2" maxlength="20"></label>
+      <label class="field"><span>記念日（付き合った日）</span><input type="date" id="sAnniv"></label>
+      <div class="field"><span>カウンター表示</span>
+        <div class="seg" id="sFormat">
+          <button data-v="days">日数<small>3,987日</small></button>
+          <button data-v="ymd">年月日<small>10年10ヶ月10日</small></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="group">
+      <h3>表示</h3>
+      <div class="field"><span>フォント</span>
+        <div class="seg" id="sFont">
+          <button data-v="mplus">M PLUS Rounded 1c</button>
+          <button data-v="kosugi">Kosugi Maru</button>
+        </div>
+      </div>
+      <div class="field"><span>文字サイズ <b id="sizeVal"></b></span>
+        <input type="range" id="sSize" min="85" max="130" step="5">
+        <div class="preview">あのとき見た夕焼けを、ずっと覚えていたい。</div>
+      </div>
+    </div>
+
+    <div class="group">
+      <h3>データ</h3>
+      <div class="data-grid">
+        <button class="data-btn" id="exJson"><svg class="ic"><use href="#i-down"/></svg><b>JSONで保存</b><small>写真を含む完全バックアップ</small></button>
+        <button class="data-btn" id="exCsv"><svg class="ic"><use href="#i-down"/></svg><b>CSVで保存</b><small>日付とコメントのみ</small></button>
+        <label class="data-btn"><svg class="ic"><use href="#i-up"/></svg><b>CSVを取り込む</b><small>まとめて追加</small><input type="file" id="imCsv" accept=".csv,text/csv,.txt" hidden></label>
+        <label class="data-btn"><svg class="ic"><use href="#i-up"/></svg><b>JSONから復元</b><small>バックアップを読み込む</small><input type="file" id="imJson" accept=".json,application/json" hidden></label>
+      </div>
+      <p class="help">CSVは1列目が日付（2024-05-01 / 2024/5/1 / 2024年5月1日）、2列目がコメントです。1行目の見出しは自動で判別します。UTF-8・Shift_JISに対応。<button class="link" id="tpl">テンプレートをダウンロード</button></p>
+    </div>
+    <button class="btn primary full" id="btnSettingsSave">完了</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script src="app.js"></script>
+</body>
+</html>
